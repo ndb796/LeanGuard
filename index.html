@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeanGuard: Do Safety Guardrails Need to Reason?</title>
+<meta name="description" content="LeanGuard: A Fast and Light Approach for Robust Moderation. A 395M single-pass safety guardrail that matches reasoning guards at ~100x lower inference cost.">
+<meta property="og:title" content="Do Safety Guardrails Need to Reason? LeanGuard">
+<meta property="og:description" content="A 395M single-pass safety guardrail that matches chain-of-thought reasoning guards at ~100x lower inference cost.">
+<meta property="og:image" content="resources/main.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#0E8C7B; --teal-d:#0A6F61; --ink:#1E2A38; --slate:#52606E;
+    --mute:#8A94A1; --line:#E2E7EC; --bg:#FFFFFF; --soft:#F6F8F9; --red:#C0392B;
+    --link:#1A56DB;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:'Lato',system-ui,-apple-system,sans-serif;color:var(--ink);
+    background:var(--bg);line-height:1.65;font-size:17px;-webkit-font-smoothing:antialiased}
+  a{color:var(--link);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:880px;margin:0 auto;padding:0 22px}
+
+  header{padding:56px 0 8px;text-align:center;border-bottom:1px solid var(--line)}
+  h1{font-size:33px;line-height:1.25;font-weight:900;letter-spacing:-.4px;margin:0 0 6px}
+  h1 .lead{color:var(--teal-d)}
+  .subtitle{font-size:19px;color:var(--slate);font-weight:700;margin:2px 0 22px}
+  .venue{display:inline-block;font-size:13.5px;color:var(--slate);background:var(--soft);
+    border:1px solid var(--line);border-radius:999px;padding:4px 13px;margin-bottom:20px}
+  .authors{font-size:18.5px;margin:8px 0 2px}
+  .authors a{font-weight:700}
+  .affil{font-size:15.5px;color:var(--slate);margin:2px 0 4px}
+  .corr{font-size:14px;color:var(--mute);margin-bottom:24px}
+
+  .btns{display:flex;flex-wrap:wrap;gap:11px;justify-content:center;margin:8px 0 38px}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:700;
+    padding:10px 18px;border-radius:10px;border:1px solid var(--ink);background:var(--ink);
+    color:#fff;transition:.15s}
+  .btn:hover{transform:translateY(-1px);text-decoration:none;opacity:.92}
+  .btn.ghost{background:#fff;color:var(--ink)}
+  .btn.soon{background:#fff;color:var(--mute);border-color:var(--line);cursor:default}
+  .btn.soon:hover{transform:none;opacity:1}
+  .btn .ico{font-size:16px}
+
+  section{padding:34px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:22px;font-weight:900;letter-spacing:-.2px;margin:0 0 16px;text-align:center}
+  h2 .bar{color:var(--teal)}
+  p{margin:0 0 15px}
+  .fig{text-align:center;margin:6px 0 4px}
+  .fig img{max-width:100%;height:auto;border-radius:8px}
+  .cap{font-size:14px;color:var(--mute);max-width:760px;margin:10px auto 0;text-align:center}
+
+  .abstract{background:var(--soft);border:1px solid var(--line);border-radius:12px;
+    padding:24px 26px;font-size:16.5px;color:#2a3744}
+  .abstract b{color:var(--teal-d)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:6px}
+  .card{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:#fff}
+  .card h3{margin:0 0 8px;font-size:16.5px;color:var(--teal-d)}
+  .card p{font-size:15px;color:var(--slate);margin:0}
+  .card .m1{font-weight:900;color:var(--red)}
+
+  table{width:100%;border-collapse:collapse;font-size:15.5px;margin:4px 0}
+  th,td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line)}
+  th{font-weight:700;color:var(--slate);font-size:13.5px;text-transform:uppercase;letter-spacing:.3px}
+  td:first-child,th:first-child{text-align:left}
+  tr.ours td{background:#EAF6F3;font-weight:700}
+  .yes{color:var(--teal-d);font-weight:700}
+  .no{color:var(--mute)}
+
+  .roadmap td{text-align:left}
+  .ok{color:var(--teal-d);font-weight:700}
+  .pend{color:#B8860B;font-weight:700}
+
+  pre{background:#0f1722;color:#e8eef5;border-radius:10px;padding:18px 20px;overflow-x:auto;
+    font-family:'Source Code Pro',monospace;font-size:13.5px;line-height:1.6}
+  .note{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:14px 18px;
+    font-size:14.5px;color:#7a5b00;margin-top:14px}
+
+  footer{padding:30px 0 60px;text-align:center;color:var(--mute);font-size:14px;border-bottom:none}
+
+  @media (max-width:680px){
+    h1{font-size:25px} .subtitle{font-size:16px}
+    .grid2{grid-template-columns:1fr} body{font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="venue">Preprint &nbsp;&middot;&nbsp; Under review</span>
+    <h1>Do Safety Guardrails Need to Reason?<br><span class="lead">LeanGuard</span>: A Fast and Light Approach for Robust Moderation</h1>
+    <div class="authors"><a href="https://github.com/ndb796" target="_blank">Dongbin Na</a></div>
+    <div class="corr">Correspondence: dongbinna@postech.ac.kr</div>
+    <div class="btns">
+      <a class="btn" href="https://arxiv.org/abs/XXXX.XXXXX" target="_blank"><span class="ico">&#128196;</span> Paper (arXiv)</a>
+      <a class="btn ghost" href="https://github.com/ndb796/LeanGuard" target="_blank"><span class="ico">&#9737;</span> Code (GitHub)</a>
+      <span class="btn soon"><span class="ico">&#129303;</span> Models &middot; soon</span>
+      <span class="btn soon"><span class="ico">&#9654;</span> Colab &middot; soon</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="fig">
+      <img src="resources/main.png" width="640" alt="Cost-accuracy plane: LeanGuard matches reasoning guards at ~100x lower inference cost.">
+    </div>
+    <p class="cap"><b>LeanGuard</b>, a 395M label-only encoder, matches much larger chain-of-thought reasoning guards at about <b>~100&times; lower inference cost</b> and a single forward pass.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="bar">/</span> Abstract</h2>
+    <div class="abstract">
+      In order to screen a prompt or a response, recent guardrail methods generate a chain-of-thought (CoT) before they issue a verdict, following a common belief that step-by-step reasoning improves a decision. However, CoT also makes the guard heavy and slow, because the model must generate many tokens before it decides, which may not match how guardrails are actually deployed. A guardrail is often expected to be lightweight and fast, and it often runs on-device, for example on an embodied robot. In this paper, we ask whether a safety guardrail really needs to reason. We train a lightweight bidirectional encoder and a reasoning guard on the same corpus, then remove only the reasoning while keeping everything else fixed. With this controlled same-base comparison, we show that the chain does not improve moderation accuracy. We name the resulting guard <b>LeanGuard</b>. A 395M label-only encoder reaches an average F1 of <b>82.90&plusmn;0.26</b> over public benchmarks, matching a reasoning guard built on a much larger decoder while using only a single forward pass about a <b>~100&times;</b> reduction in inference compute. We further show that this label-only encoder stays robust under training-label noise and retains far more recall at a strict false-positive rate than the reasoning guard.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="bar">/</span> Two Misconceptions</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>(M1) CoT is necessary for accuracy</h3>
+        <p>On the <i>same</i> decoder base, adding a chain-of-thought does <b>not</b> improve accuracy. Re-sampling the chain changes the verdict on only <span class="m1">~5%</span> of inputs, and a linear probe shows the verdict is fixed <i>before</i> the chain is written the reasoning <b>justifies</b> a decision rather than computing it.</p>
+      </div>
+      <div class="card">
+        <h3>(M2) Heavier reasoning is more robust</h3>
+        <p>Under injected training-label noise a single-pass encoder degrades more gracefully than generation, and at a strict <b>1% false-positive rate</b> it retains <span class="m1">44.8</span> recall versus the reasoning guard's <b>10.1</b>.</p>
+      </div>
+    </div>
+    <div class="fig" style="margin-top:22px">
+      <img src="resources/concept.png" width="760" alt="The chain-of-thought of a guard decoder is largely post-hoc.">
+    </div>
+    <p class="cap">The decoder's verdict is essentially decided before the chain is generated; the later reasoning restates it at ~100&times; the cost.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="bar">/</span> Main Results</h2>
+    <p style="text-align:center;color:var(--slate);font-size:15.5px;margin-bottom:18px">
+      Headline F1 (unweighted mean over prompt-harm, response-harm, refusal), evaluated cell-for-cell under the GuardReasoner protocol over eleven public benchmarks.</p>
+    <table>
+      <thead><tr><th>Model</th><th>Backbone</th><th>Params</th><th>CoT</th><th>Single pass</th><th>Headline F1</th></tr></thead>
+      <tbody>
+        <tr><td>WildGuard-7B</td><td>decoder</td><td>7B</td><td class="yes">&#10003;</td><td class="no">&#10007;</td><td>81.96</td></tr>
+        <tr><td>GuardReasoner-1B</td><td>decoder</td><td>1.24B</td><td class="yes">&#10003;</td><td class="no">&#10007;</td><td>82.05</td></tr>
+        <tr><td>GuardReasoner-3B</td><td>decoder</td><td>3B</td><td class="yes">&#10003;</td><td class="no">&#10007;</td><td>82.50</td></tr>
+        <tr class="ours"><td>LeanGuard (ours)</td><td>encoder</td><td>395M</td><td class="no">&#10007;</td><td class="yes">&#10003;</td><td>82.90</td></tr>
+      </tbody>
+    </table>
+    <p style="text-align:center;color:var(--slate);font-size:15px;margin-top:16px">
+      LeanGuard matches or exceeds the reasoning guards at about <b>~100&times; lower inference cost</b>, wins or ties <b>9 of 13</b> per-benchmark cells against GuardReasoner-1B, and a free 3-seed vote reaches <b>83.35</b>. A classifier trained with <b>10% of its labels corrupted (82.16)</b> still matches a clean GuardReasoner-1B (82.05).</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="bar">/</span> Release Roadmap</h2>
+    <table class="roadmap">
+      <tbody>
+        <tr><td>Paper (arXiv preprint)</td><td style="text-align:right" class="ok">Available</td></tr>
+        <tr><td>Figures and project page</td><td style="text-align:right" class="ok">Available</td></tr>
+        <tr><td>Training and evaluation code</td><td style="text-align:right" class="pend">Coming soon</td></tr>
+        <tr><td>Google Colab demo (one-click reproduction)</td><td style="text-align:right" class="pend">Coming soon</td></tr>
+        <tr><td>Pretrained checkpoints + ONNX export (Hugging Face)</td><td style="text-align:right" class="pend">Coming soon</td></tr>
+        <tr><td>Training / evaluation dataset splits</td><td style="text-align:right" class="pend">Coming soon</td></tr>
+      </tbody>
+    </table>
+    <div class="note">The paper, README, and figures are public now. The code, models, ONNX export, and dataset splits are being released together with this paper and will be linked here shortly.</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="bar">/</span> BibTeX</h2>
+<pre>@article{na2026leanguard,
+  title   = {Do Safety Guardrails Need to Reason? LeanGuard: A Fast
+             and Light Approach for Robust Moderation},
+  author  = {Na, Dongbin},
+  journal = {arXiv preprint arXiv:XXXX.XXXXX},
+  year    = {2026}
+}</pre>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a href="https://github.com/ndb796/LeanGuard" target="_blank">GitHub</a> &nbsp;&middot;&nbsp;
+    <a href="https://arxiv.org/abs/XXXX.XXXXX" target="_blank">arXiv</a> &nbsp;&middot;&nbsp;
+    <a href="https://github.com/ndb796" target="_blank">Dongbin Na</a>
+    <div style="margin-top:10px">&copy; 2026 Dongbin Na</div>
+  </div>
+</footer>
+
+</body>
+</html>
